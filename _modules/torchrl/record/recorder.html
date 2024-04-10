@@ -381,6 +381,7 @@
 <span class="c1">#</span>
 <span class="c1"># This source code is licensed under the MIT license found in the</span>
 <span class="c1"># LICENSE file in the root directory of this source tree.</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">importlib.util</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
@@ -412,11 +413,12 @@
 <span class="sd">        in_keys (Sequence of NestedKey, optional): keys to be read to produce the video.</span>
 <span class="sd">            Default is :obj:`&quot;pixels&quot;`.</span>
 <span class="sd">        skip (int): frame interval in the output video.</span>
-<span class="sd">            Default is 2.</span>
+<span class="sd">            Default is ``2`` if the transform has a parent environment, and ``1`` if not.</span>
 <span class="sd">        center_crop (int, optional): value of square center crop.</span>
 <span class="sd">        make_grid (bool, optional): if ``True``, a grid is created assuming that a</span>
 <span class="sd">            tensor of shape [B x W x H x 3] is provided, with B being the batch</span>
-<span class="sd">            size. Default is True.</span>
+<span class="sd">            size. Default is ``True`` if the transform has a parent environment, and ``False``</span>
+<span class="sd">            if not.</span>
 <span class="sd">        out_keys (sequence of NestedKey, optional): destination keys. Defaults</span>
 <span class="sd">            to ``in_keys`` if not provided.</span>
 
@@ -445,6 +447,26 @@
 
 <span class="sd">        &gt;&gt;&gt; env.transform.dump()</span>
 
+<span class="sd">        The transform can also be used within a dataset to save the video collected. Unlike in the environment case,</span>
+<span class="sd">        images will come in a batch. The ``skip`` argument will enable to save the images only at specific intervals.</span>
+
+<span class="sd">            &gt;&gt;&gt; from torchrl.data.datasets import OpenXExperienceReplay</span>
+<span class="sd">            &gt;&gt;&gt; from torchrl.envs import Compose</span>
+<span class="sd">            &gt;&gt;&gt; from torchrl.record import VideoRecorder, CSVLogger</span>
+<span class="sd">            &gt;&gt;&gt; # Create a logger that saves videos as mp4</span>
+<span class="sd">            &gt;&gt;&gt; logger = CSVLogger(&quot;./dump&quot;, video_format=&quot;mp4&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; # We use the VideoRecorder transform to save register the images coming from the batch.</span>
+<span class="sd">            &gt;&gt;&gt; t = VideoRecorder(logger=logger, tag=&quot;pixels&quot;, in_keys=[(&quot;next&quot;, &quot;observation&quot;, &quot;image&quot;)])</span>
+<span class="sd">            &gt;&gt;&gt; # Each batch of data will have 10 consecutive videos of 200 frames each (maximum, since strict_length=False)</span>
+<span class="sd">            &gt;&gt;&gt; dataset = OpenXExperienceReplay(&quot;cmu_stretch&quot;, batch_size=2000, slice_len=200,</span>
+<span class="sd">            ...             download=True, strict_length=False,</span>
+<span class="sd">            ...             transform=t)</span>
+<span class="sd">            &gt;&gt;&gt; # Get a batch of data and visualize it</span>
+<span class="sd">            &gt;&gt;&gt; for data in dataset:</span>
+<span class="sd">            ...     t.dump()</span>
+<span class="sd">            ...     break</span>
+
+
 <span class="sd">    Our video is available under ``./cheetah_videos/cheetah/videos/run_video_0.mp4``!</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -454,9 +476,9 @@
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
         <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">in_keys</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">NestedKey</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">skip</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">skip</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">center_crop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">make_grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">make_grid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">out_keys</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">NestedKey</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -481,12 +503,59 @@
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="p">[]</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">make_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">make_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_grid</span>
+        <span class="k">if</span> <span class="n">make_grid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_make_grid</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_grid</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">make_grid</span>
+
+    <span class="nd">@make_grid</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">make_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_make_grid</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">skip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_skip</span>
+        <span class="k">if</span> <span class="n">skip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_skip</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="k">return</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_skip</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">skip</span>
+
+    <span class="nd">@skip</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_skip</span> <span class="o">=</span> <span class="n">value</span>
+
     <span class="k">def</span> <span class="nf">_apply_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">observation</span><span class="o">.</span><span class="n">ndimension</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid observation shape, got: </span><span class="si">{</span><span class="n">observation</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">observation</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">observation</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+                <span class="ow">and</span> <span class="n">observation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+                <span class="ow">and</span> <span class="n">observation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span>
+                <span class="ow">and</span> <span class="n">observation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">3</span>
+            <span class="p">):</span>
+                <span class="c1"># permute the channels to the last dim</span>
+                <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">observation</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span>
+                    <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">3</span><span class="p">),</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">observation</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+                <span class="n">observation_trsf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">observation_trsf</span><span class="o">.</span><span class="n">ndimension</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid observation shape, got: </span><span class="si">{</span><span class="n">observation</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">observation_trsf</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+
             <span class="k">if</span> <span class="n">observation</span><span class="o">.</span><span class="n">ndimension</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">observation</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -510,7 +579,7 @@
                 <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">center_crop_fn</span><span class="p">(</span>
                     <span class="n">observation_trsf</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">center_crop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_crop</span><span class="p">]</span>
                 <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_grid</span> <span class="ow">and</span> <span class="n">observation_trsf</span><span class="o">.</span><span class="n">ndimension</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_grid</span> <span class="ow">and</span> <span class="n">observation_trsf</span><span class="o">.</span><span class="n">ndimension</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_tv</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
                         <span class="s2">&quot;Could not import torchvision, `make_grid` not available.&quot;</span>
@@ -518,30 +587,42 @@
                     <span class="p">)</span>
                 <span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">make_grid</span>
 
-                <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">observation_trsf</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_trsf</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+                <span class="n">observation_trsf</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">observation_trsf</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_trsf</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">observation_trsf</span><span class="o">.</span><span class="n">ndimension</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">observation_trsf</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">observation_trsf</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">observation</span>
 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDictBase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorDictBase</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the video to the self.logger attribute.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the video to the ``self.logger`` attribute.</span>
+
+<span class="sd">        Calling ``dump`` when no image has been stored in a no-op.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            suffix (str, optional): a suffix for the video to be recorded</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">suffix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">:</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">suffix</span><span class="p">])</span>
-        <span class="n">obs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_video</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span>
-                <span class="n">video</span><span class="o">=</span><span class="n">obs</span><span class="p">,</span>
-                <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">,</span>
-                <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">video_kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">del</span> <span class="n">obs</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">obs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">suffix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">suffix</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_video</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span>
+                    <span class="n">video</span><span class="o">=</span><span class="n">obs</span><span class="p">,</span>
+                    <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="p">,</span>
+                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">video_kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="p">[]</span>
