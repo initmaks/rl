@@ -452,6 +452,16 @@ To be used only with <a class="reference internal" href="#torchrl.envs.ParallelE
 </ul>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>One can pass keyword arguments to each sub-environments using the following
+technique: every keyword argument in <a class="reference internal" href="#torchrl.envs.ParallelEnv.reset" title="torchrl.envs.ParallelEnv.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> will be passed to each
+environment except for the <code class="docutils literal notranslate"><span class="pre">list_of_kwargs</span></code> argument which, if present,
+should contain a list of the same length as the number of workers with the
+worker-specific keyword arguments stored in a dictionary.
+If a partial reset is queried, the element of <code class="docutils literal notranslate"><span class="pre">list_of_kwargs</span></code> corresponding
+to sub-environments that are not reset will be ignored.</p>
+</div>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">torchrl.envs</span> <span class="kn">import</span> <span class="n">GymEnv</span><span class="p">,</span> <span class="n">ParallelEnv</span><span class="p">,</span> <span class="n">SerialEnv</span><span class="p">,</span> <span class="n">EnvCreator</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">make_env</span> <span class="o">=</span> <span class="n">EnvCreator</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">GymEnv</span><span class="p">(</span><span class="s2">&quot;Pendulum-v1&quot;</span><span class="p">))</span> <span class="c1"># EnvCreator ensures that the env is sharable. Optional in most cases.</span>
@@ -1500,8 +1510,16 @@ exception is the <code class="docutils literal notranslate"><span class="pre">re
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>missing_keys</strong> is a list of str containing the missing keys</p></li>
-<li><p><strong>unexpected_keys</strong> is a list of str containing the unexpected keys</p></li>
+<li><dl class="simple">
+<dt><strong>missing_keys</strong> is a list of str containing any keys that are expected</dt><dd><p>by this module but missing from the provided <code class="docutils literal notranslate"><span class="pre">state_dict</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>unexpected_keys</strong> is a list of str containing the keys that are not</dt><dd><p>expected by this module but present in the provided <code class="docutils literal notranslate"><span class="pre">state_dict</span></code>.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </p>
 </dd>

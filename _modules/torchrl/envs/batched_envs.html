@@ -559,6 +559,15 @@
 <span class="sd">            TorchRL if not initiated differently before first import).</span>
 <span class="sd">            To be used only with :class:`~torchrl.envs.ParallelEnv` subclasses.</span>
 
+<span class="sd">    .. note::</span>
+<span class="sd">        One can pass keyword arguments to each sub-environments using the following</span>
+<span class="sd">        technique: every keyword argument in :meth:`~.reset` will be passed to each</span>
+<span class="sd">        environment except for the ``list_of_kwargs`` argument which, if present,</span>
+<span class="sd">        should contain a list of the same length as the number of workers with the</span>
+<span class="sd">        worker-specific keyword arguments stored in a dictionary.</span>
+<span class="sd">        If a partial reset is queried, the element of ``list_of_kwargs`` corresponding</span>
+<span class="sd">        to sub-environments that are not reset will be ignored.</span>
+
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from torchrl.envs import GymEnv, ParallelEnv, SerialEnv, EnvCreator</span>
 <span class="sd">        &gt;&gt;&gt; make_env = EnvCreator(lambda: GymEnv(&quot;Pendulum-v1&quot;)) # EnvCreator ensures that the env is sharable. Optional in most cases.</span>
@@ -1247,6 +1256,11 @@
 
     <span class="nd">@_check_start</span>
     <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDictBase</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorDictBase</span><span class="p">:</span>
+        <span class="n">list_of_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;list_of_kwargs&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">kwargs</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">list_of_kwargs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># this means that kwargs had more than one element and that a list was provided</span>
+            <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">list_of_kwargs</span><span class="p">:</span>
+                <span class="n">elt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tensordict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">needs_resetting</span> <span class="o">=</span> <span class="n">_aggregate_end_of_traj</span><span class="p">(</span>
                 <span class="n">tensordict</span><span class="p">,</span> <span class="n">reset_keys</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_keys</span>
@@ -1286,7 +1300,7 @@
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tensordict_</span> <span class="ow">in</span> <span class="n">tds</span><span class="p">:</span>
             <span class="n">_env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_envs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">_td</span> <span class="o">=</span> <span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">tensordict</span><span class="o">=</span><span class="n">tensordict_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">_td</span> <span class="o">=</span> <span class="n">_env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">tensordict</span><span class="o">=</span><span class="n">tensordict_</span><span class="p">,</span> <span class="o">**</span><span class="n">list_of_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">shared_tensordicts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">update_</span><span class="p">(</span>
                     <span class="n">_td</span><span class="p">,</span>
@@ -1818,6 +1832,11 @@
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="nd">@_check_start</span>
     <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDictBase</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorDictBase</span><span class="p">:</span>
+        <span class="n">list_of_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;list_of_kwargs&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">kwargs</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">list_of_kwargs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="c1"># this means that kwargs had more than one element and that a list was provided</span>
+            <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">list_of_kwargs</span><span class="p">:</span>
+                <span class="n">elt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tensordict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">needs_resetting</span> <span class="o">=</span> <span class="n">_aggregate_end_of_traj</span><span class="p">(</span>
                 <span class="n">tensordict</span><span class="p">,</span> <span class="n">reset_keys</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_keys</span>
@@ -1878,9 +1897,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">shared_tensordicts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">apply_</span><span class="p">(</span>
                     <span class="n">tentative_update</span><span class="p">,</span> <span class="n">tensordict_</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
                 <span class="p">)</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="n">tdkeys</span><span class="p">)</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">tdkeys</span><span class="p">,</span> <span class="n">list_of_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">list_of_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
             <span class="n">outs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">out</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_sync_m2w</span><span class="p">()</span>
@@ -2119,10 +2138,14 @@
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;call &#39;init&#39; before resetting&quot;</span><span class="p">)</span>
             <span class="c1"># we use &#39;data&#39; to pass the keys that we need to pass to reset,</span>
             <span class="c1"># because passing the entire buffer may have unwanted consequences</span>
+            <span class="n">selected_reset_keys</span><span class="p">,</span> <span class="n">reset_kwargs</span> <span class="o">=</span> <span class="n">data</span>
             <span class="n">cur_td</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
-                <span class="n">tensordict</span><span class="o">=</span><span class="n">root_shared_tensordict</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">data</span>
-                <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">tensordict</span><span class="o">=</span><span class="n">root_shared_tensordict</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">selected_reset_keys</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">selected_reset_keys</span>
+                <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">reset_kwargs</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">shared_tensordict</span><span class="o">.</span><span class="n">update_</span><span class="p">(</span>
                 <span class="n">cur_td</span><span class="p">,</span>
