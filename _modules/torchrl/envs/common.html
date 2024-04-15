@@ -3160,6 +3160,7 @@
 <span class="sd">        they may change during the execution of the code (eg, when adding a transform).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;_step_mdp_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;_reward_keys&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;_done_keys&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;_action_keys&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3192,7 +3193,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_filtered_reset_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the only the effective reset keys, discarding nested resets if they&#39;re not being used.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns only the effective reset keys, discarding nested resets if they&#39;re not being used.&quot;&quot;&quot;</span>
         <span class="n">reset_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_keys</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
 

@@ -390,13 +390,20 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">tensordict</span> <span class="kn">import</span> <span class="n">make_tensordict</span><span class="p">,</span> <span class="n">TensorDict</span>
-<span class="kn">from</span> <span class="nn">torchrl._utils</span> <span class="kn">import</span> <span class="n">implement_for</span>
+<span class="kn">from</span> <span class="nn">tensordict</span> <span class="kn">import</span> <span class="n">TensorDict</span>
 <span class="kn">from</span> <span class="nn">torchrl.data.tensor_specs</span> <span class="kn">import</span> <span class="n">UnboundedContinuousTensorSpec</span>
-<span class="kn">from</span> <span class="nn">torchrl.envs.libs.gym</span> <span class="kn">import</span> <span class="n">_AsyncMeta</span><span class="p">,</span> <span class="n">_gym_to_torchrl_spec_transform</span><span class="p">,</span> <span class="n">GymEnv</span>
+<span class="kn">from</span> <span class="nn">torchrl.envs.libs.gym</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_AsyncMeta</span><span class="p">,</span>
+    <span class="n">_gym_to_torchrl_spec_transform</span><span class="p">,</span>
+    <span class="n">gym_backend</span><span class="p">,</span>
+    <span class="n">GymEnv</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">torchrl.envs.utils</span> <span class="kn">import</span> <span class="n">_classproperty</span><span class="p">,</span> <span class="n">make_composite_from_td</span>
 
-<span class="n">_has_gym</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;gym&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="n">_has_gym</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;gym&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="ow">or</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;gymnasium&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="p">)</span>
 <span class="n">_has_robohive</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;robohive&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_has_gym</span>
 
 <span class="k">if</span> <span class="n">_has_robohive</span><span class="p">:</span>
@@ -505,7 +512,7 @@
     <span class="k">def</span> <span class="nf">available_envs</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_robohive</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
-        <span class="n">RoboHiveEnv</span><span class="o">.</span><span class="n">register_envs</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">register_envs</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">env_list</span>
 
     <span class="nd">@classmethod</span>
@@ -522,25 +529,6 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">robohive_envs</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;did not load any environment.&quot;</span><span class="p">)</span>
 
-    <span class="nd">@implement_for</span><span class="p">(</span>
-        <span class="s2">&quot;gymnasium&quot;</span><span class="p">,</span>
-    <span class="p">)</span>  <span class="c1"># make sure gym 0.13 is installed, otherwise raise an exception</span>
-    <span class="k">def</span> <span class="nf">_build_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># noqa: F811</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;Your gym version is too recent, RoboHiveEnv is only compatible with gym==0.13.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@implement_for</span><span class="p">(</span>
-        <span class="s2">&quot;gym&quot;</span><span class="p">,</span> <span class="s2">&quot;0.14&quot;</span><span class="p">,</span> <span class="kc">None</span>
-    <span class="p">)</span>  <span class="c1"># make sure gym 0.13 is installed, otherwise raise an exception</span>
-    <span class="k">def</span> <span class="nf">_build_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># noqa: F811</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;Your gym version is too recent, RoboHiveEnv is only compatible with gym 0.13.&quot;</span>
-        <span class="p">)</span>
-
-    <span class="nd">@implement_for</span><span class="p">(</span>
-        <span class="s2">&quot;gym&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;0.14&quot;</span>
-    <span class="p">)</span>  <span class="c1"># make sure gym 0.13 is installed, otherwise raise an exception</span>
     <span class="k">def</span> <span class="nf">_build_env</span><span class="p">(</span>  <span class="c1"># noqa: F811</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -605,6 +593,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">set_info_dict_reader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_info</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">env</span>
 
+    <span class="k">def</span> <span class="nf">_make_specs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="s2">&quot;gym.Env&quot;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: F821</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_make_specs</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_info</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">TensorDict</span><span class="p">({},</span> <span class="p">[]))</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="p">[</span><span class="s2">&quot;observation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_composite_from_td</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">register_visual_env</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">env_name</span><span class="p">,</span> <span class="n">cams</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">set_directory</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">CURR_DIR</span><span class="p">):</span>
@@ -613,7 +610,8 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">cams</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Cannot create a visual envs without cameras.&quot;</span><span class="p">)</span>
             <span class="n">cams</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">cams</span><span class="p">)</span>
-            <span class="n">new_env_name</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">cam</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">cam</span> <span class="ow">in</span> <span class="n">cams</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">env_name</span><span class="p">])</span>
+            <span class="n">cams_rep</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;A:&quot;</span><span class="p">,</span> <span class="s2">&quot;A_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cams</span><span class="p">]</span>
+            <span class="n">new_env_name</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">cam</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">cam</span> <span class="ow">in</span> <span class="n">cams_rep</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">env_name</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">new_env_name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">env_list</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">new_env_name</span>
             <span class="n">visual_keys</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;rgb:</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">:224x224:2d&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cams</span><span class="p">]</span>
@@ -663,14 +661,16 @@
             <span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">get_obs</span><span class="p">())</span>
             <span class="n">_dict</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">trunc</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_transform</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">))</span>
             <span class="n">_dict</span><span class="p">[(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="s2">&quot;reward&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">_dict</span><span class="p">[(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="s2">&quot;done&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">_dict</span><span class="p">[(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="s2">&quot;terminated&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">_dict</span><span class="p">[(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="s2">&quot;truncated&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">_dict</span><span class="p">[</span><span class="s2">&quot;next&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_obs</span><span class="p">()</span>
             <span class="n">rollout</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">TensorDict</span><span class="p">(</span><span class="n">_dict</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="n">observation_spec</span> <span class="o">=</span> <span class="n">make_composite_from_td</span><span class="p">(</span>
-            <span class="n">rollout</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s2">&quot;done&quot;</span><span class="p">,</span> <span class="s2">&quot;reward&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">rollout</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s2">&quot;done&quot;</span><span class="p">,</span> <span class="s2">&quot;reward&quot;</span><span class="p">,</span> <span class="s2">&quot;terminated&quot;</span><span class="p">,</span> <span class="s2">&quot;truncated&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span> <span class="o">=</span> <span class="n">observation_spec</span>
 
@@ -686,6 +686,7 @@
         <span class="n">rollout</span> <span class="o">=</span> <span class="n">rollout</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="n">make_composite_from_td</span><span class="p">(</span><span class="n">rollout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">set_from_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_pixels</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the from_pixels attribute to an existing environment.</span>
@@ -732,18 +733,34 @@
 
     <span class="k">def</span> <span class="nf">read_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">tensordict_out</span><span class="p">):</span>
         <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;obs_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span> <span class="s2">&quot;reward&quot;</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">obs_keys</span><span class="p">,</span> <span class="s2">&quot;act&quot;</span><span class="p">):</span>
-                <span class="k">continue</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">_val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">_val</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">make_tensordict</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="p">[])</span>
-            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="n">tensordict_out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="n">tensordict_out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">tensordict_out</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="k">else</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">info_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">info_spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tensordict_out</span>
+            <span class="n">tensordict_out</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="n">info_spec</span><span class="o">.</span><span class="n">zero</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">tensordict_out</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">TensorDict</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="o">.</span><span class="n">filter_non_tensor_data</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s2">&quot;obs_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span> <span class="s2">&quot;reward&quot;</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">obs_keys</span><span class="p">,</span> <span class="s2">&quot;act&quot;</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;info&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">info_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span>
+
+            <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">info_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">info_spec</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+            <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">named_apply</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">nested_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">filter_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="k">else</span> <span class="n">x</span><span class="p">,</span> <span class="n">filter_empty</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">tensordict_out</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tensordict_out</span>
 
     <span class="k">def</span> <span class="nf">_init_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -761,9 +778,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_available_cams</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">env_name</span><span class="p">):</span>
-        <span class="kn">import</span> <span class="nn">gym</span>
-
-        <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">gym_backend</span><span class="p">()</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">)</span>
         <span class="n">cams</span> <span class="o">=</span> <span class="p">[</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">id2name</span><span class="p">(</span><span class="n">ic</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">ncam</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">cams</span></div>
 </pre></div>
