@@ -439,13 +439,14 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDictBase</span><span class="p">,</span>
         <span class="n">specs</span><span class="p">:</span> <span class="n">CompositeSpec</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">,</span>
         <span class="n">env_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-        <span class="n">batch_locked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">device_map</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_locked</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">device_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tensordict</span> <span class="o">=</span> <span class="n">tensordict</span>
@@ -496,31 +497,37 @@
 
         <span class="n">tensordict</span><span class="o">.</span><span class="n">named_apply</span><span class="p">(</span><span class="n">fill_device_map</span><span class="p">,</span> <span class="n">nested_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">filter_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EnvMetaData</span><span class="p">(</span>
-            <span class="n">tensordict</span><span class="p">,</span> <span class="n">specs</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">env_str</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">batch_locked</span><span class="p">,</span> <span class="n">device_map</span>
+            <span class="n">tensordict</span><span class="o">=</span><span class="n">tensordict</span><span class="p">,</span>
+            <span class="n">specs</span><span class="o">=</span><span class="n">specs</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">env_str</span><span class="o">=</span><span class="n">env_str</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">batch_locked</span><span class="o">=</span><span class="n">batch_locked</span><span class="p">,</span>
+            <span class="n">device_map</span><span class="o">=</span><span class="n">device_map</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">expand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EnvMetaData</span><span class="p">:</span>
         <span class="n">tensordict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensordict</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
         <span class="n">batch_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">EnvMetaData</span><span class="p">(</span>
-            <span class="n">tensordict</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">),</span>
-            <span class="n">batch_size</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">env_str</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">batch_locked</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">device_map</span><span class="p">,</span>
+            <span class="n">tensordict</span><span class="o">=</span><span class="n">tensordict</span><span class="p">,</span>
+            <span class="n">specs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">env_str</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_str</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">batch_locked</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_locked</span><span class="p">,</span>
+            <span class="n">device_map</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_map</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">EnvMetaData</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tensordict</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">]),</span>
-            <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_str</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">batch_locked</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">device_map</span><span class="p">,</span>
+            <span class="n">tensordict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tensordict</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">specs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">]),</span>
+            <span class="n">env_str</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env_str</span><span class="p">),</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">batch_locked</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_locked</span><span class="p">,</span>
+            <span class="n">device_map</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device_map</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">DEVICE_TYPING</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EnvMetaData</span><span class="p">:</span>
@@ -530,18 +537,20 @@
         <span class="n">tensordict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensordict</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">specs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">specs</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">EnvMetaData</span><span class="p">(</span>
-            <span class="n">tensordict</span><span class="p">,</span>
-            <span class="n">specs</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">env_str</span><span class="p">,</span>
-            <span class="n">device</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">batch_locked</span><span class="p">,</span>
-            <span class="n">device_map</span><span class="p">,</span>
+            <span class="n">tensordict</span><span class="o">=</span><span class="n">tensordict</span><span class="p">,</span>
+            <span class="n">specs</span><span class="o">=</span><span class="n">specs</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">env_str</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_str</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">batch_locked</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_locked</span><span class="p">,</span>
+            <span class="n">device_map</span><span class="o">=</span><span class="n">device_map</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">_EnvPostInit</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">auto_reset</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;auto_reset&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">auto_reset_replace</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;auto_reset_replace&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="n">instance</span><span class="p">:</span> <span class="n">EnvBase</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># we create the done spec by adding a done/terminated entry if one is missing</span>
         <span class="n">instance</span><span class="o">.</span><span class="n">_create_done_specs</span><span class="p">()</span>
@@ -551,6 +560,15 @@
         <span class="n">_</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">done_spec</span>
         <span class="n">_</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">reward_spec</span>
         <span class="n">_</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">state_spec</span>
+        <span class="k">if</span> <span class="n">auto_reset</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">torchrl.envs.transforms.transforms</span> <span class="kn">import</span> <span class="p">(</span>
+                <span class="n">AutoResetEnv</span><span class="p">,</span>
+                <span class="n">AutoResetTransform</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">AutoResetEnv</span><span class="p">(</span>
+                <span class="n">instance</span><span class="p">,</span> <span class="n">AutoResetTransform</span><span class="p">(</span><span class="n">replace</span><span class="o">=</span><span class="n">auto_reset_replace</span><span class="p">)</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">instance</span>
 
 
@@ -2488,7 +2506,7 @@
         <span class="k">if</span> <span class="n">tensordict_reset</span> <span class="ow">is</span> <span class="n">tensordict</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="s2">&quot;EnvBase._reset should return outplace changes to the input &quot;</span>
-                <span class="s2">&quot;tensordict. Consider emptying the TensorDict first (e.g. tensordict.empty())&quot;</span>
+                <span class="s2">&quot;tensordict. Consider emptying the TensorDict first (e.g. tensordict.empty()) &quot;</span>
                 <span class="s2">&quot;inside _reset before writing new tensors onto this new instance.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensordict_reset</span><span class="p">,</span> <span class="n">TensorDictBase</span><span class="p">):</span>
@@ -2996,7 +3014,8 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">tensordict</span><span class="o">.</span><span class="n">clear_device_</span><span class="p">()</span>
             <span class="n">tensordict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span>
-            <span class="n">tensordicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensordict</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span>
+            <span class="n">td_append</span> <span class="o">=</span> <span class="n">tensordict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">tensordicts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">td_append</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">max_steps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># we don&#39;t truncate as one could potentially continue the run</span>
@@ -3010,6 +3029,7 @@
                 <span class="n">full_done_spec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_spec</span><span class="p">[</span><span class="s2">&quot;full_done_spec&quot;</span><span class="p">],</span>
                 <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
+
             <span class="k">if</span> <span class="n">any_done</span><span class="p">:</span>
                 <span class="k">break</span>
 
@@ -3288,7 +3308,12 @@
 
         <span class="n">fake_state</span> <span class="o">=</span> <span class="n">state_spec</span><span class="o">.</span><span class="n">zero</span><span class="p">()</span>
         <span class="n">fake_action</span> <span class="o">=</span> <span class="n">action_spec</span><span class="o">.</span><span class="n">zero</span><span class="p">()</span>
-        <span class="n">fake_input</span> <span class="o">=</span> <span class="n">fake_state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fake_action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">LazyStackedTensorDict</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">fake_action</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">fake_input</span> <span class="o">=</span> <span class="n">fake_action</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fake_state</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fake_input</span> <span class="o">=</span> <span class="n">fake_state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">fake_action</span><span class="p">)</span>
 
         <span class="c1"># the input and output key may match, but the output prevails</span>
         <span class="c1"># Hence we generate the input, and override using the output</span>

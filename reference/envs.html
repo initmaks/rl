@@ -521,7 +521,7 @@ provides more information on how to design a custom environment from scratch.</p
 <tr class="row-even"><td><p><a class="reference internal" href="generated/torchrl.envs.GymLikeEnv.html#torchrl.envs.GymLikeEnv" title="torchrl.envs.GymLikeEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GymLikeEnv</span></code></a>(*args, **kwargs)</p></td>
 <td><p>A gym-like env is an environment.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/torchrl.envs.EnvMetaData.html#torchrl.envs.EnvMetaData" title="torchrl.envs.EnvMetaData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnvMetaData</span></code></a>(tensordict, specs, batch_size, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/torchrl.envs.EnvMetaData.html#torchrl.envs.EnvMetaData" title="torchrl.envs.EnvMetaData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnvMetaData</span></code></a>(*, tensordict, specs, ...)</p></td>
 <td><p>A class for environment meta-data storage and passing in multiprocessed settings.</p></td>
 </tr>
 </tbody>
@@ -848,6 +848,81 @@ Note that <cite>env.reward_spec == env.output_spec[“full_reward_spec”][env.r
 </tbody>
 </table>
 </section>
+<section id="auto-resetting-envs">
+<h2>Auto-resetting Envs<a class="headerlink" href="#auto-resetting-envs" title="Permalink to this heading">¶</a></h2>
+<p>Auto-resetting environments are environments where calls to <a class="reference internal" href="generated/torchrl.envs.EnvBase.html#id1" title="torchrl.envs.EnvBase.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a> are not expected when
+the environment reaches a <code class="docutils literal notranslate"><span class="pre">&quot;done&quot;</span></code> state during a rollout, as the reset happens automatically.
+Usually, in such cases the observations delivered with the done and reward (which effectively result from performing the
+action in the environment) are actually the first observations of a new episode, and not the last observations of the
+current episode.</p>
+<p>To handle these cases, torchrl provides a <code class="xref py py-class docutils literal notranslate"><span class="pre">AutoResetTransform</span></code> that will copy the observations
+that result from the call to <cite>step</cite> to the next <cite>reset</cite> and skip the calls to <cite>reset</cite> during rollouts (in both
+<a class="reference internal" href="generated/torchrl.envs.EnvBase.html#id2" title="torchrl.envs.EnvBase.rollout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rollout()</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">SyncDataCollector</span></code> iterations).
+This transform class also provides a fine-grained control over the behaviour to be adopted for the invalid observations,
+which can be masked with <cite>“nan”</cite> or any other values, or not masked at all.</p>
+<p>To tell torchrl that an environment is auto-resetting, it is sufficient to provide an <code class="docutils literal notranslate"><span class="pre">auto_reset</span></code> argument
+during construction. If provided, an <code class="docutils literal notranslate"><span class="pre">auto_reset_replace</span></code> argument can also control whether the values of the last
+observation of an episode should be replaced with some placeholder or not.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">torchrl.envs</span> <span class="kn">import</span> <span class="n">GymEnv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">torchrl.envs</span> <span class="kn">import</span> <span class="n">set_gym_backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">AutoResettingGymEnv</span><span class="p">(</span><span class="n">GymEnv</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">tensordict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_step</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">tensordict</span><span class="p">[</span><span class="s2">&quot;done&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+<span class="gp">... </span>            <span class="n">td_reset</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="gp">... </span>            <span class="n">tensordict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">td_reset</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">done_keys</span><span class="p">))</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">tensordict</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">tensordict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;_reset&quot;</span> <span class="ow">in</span> <span class="n">tensordict</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="k">return</span> <span class="n">tensordict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_reset</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">set_gym_backend</span><span class="p">(</span><span class="s2">&quot;gym&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">env</span> <span class="o">=</span> <span class="n">AutoResettingGymEnv</span><span class="p">(</span><span class="s2">&quot;CartPole-v1&quot;</span><span class="p">,</span> <span class="n">auto_reset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">auto_reset_replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">env</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">r</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">rollout</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="n">break_when_any_done</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="s2">&quot;done&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">())</span>
+<span class="go">tensor([False, False, False, False, False, False, False, False, False, False,</span>
+<span class="go">        False, False, False,  True, False, False, False, False, False, False,</span>
+<span class="go">        False, False, False, False, False,  True, False, False, False, False])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;observation after reset are set as nan&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="s2">&quot;observation&quot;</span><span class="p">])</span>
+<span class="go">observation after reset are set as nan tensor([[-4.3633e-02, -1.4877e-01,  1.2849e-02,  2.7584e-01],</span>
+<span class="go">        [-4.6609e-02,  4.6166e-02,  1.8366e-02, -1.2761e-02],</span>
+<span class="go">        [-4.5685e-02,  2.4102e-01,  1.8111e-02, -2.9959e-01],</span>
+<span class="go">        [-4.0865e-02,  4.5644e-02,  1.2119e-02, -1.2542e-03],</span>
+<span class="go">        [-3.9952e-02,  2.4059e-01,  1.2094e-02, -2.9009e-01],</span>
+<span class="go">        [-3.5140e-02,  4.3554e-01,  6.2920e-03, -5.7893e-01],</span>
+<span class="go">        [-2.6429e-02,  6.3057e-01, -5.2867e-03, -8.6963e-01],</span>
+<span class="go">        [-1.3818e-02,  8.2576e-01, -2.2679e-02, -1.1640e+00],</span>
+<span class="go">        [ 2.6972e-03,  1.0212e+00, -4.5959e-02, -1.4637e+00],</span>
+<span class="go">        [ 2.3121e-02,  1.2168e+00, -7.5232e-02, -1.7704e+00],</span>
+<span class="go">        [ 4.7457e-02,  1.4127e+00, -1.1064e-01, -2.0854e+00],</span>
+<span class="go">        [ 7.5712e-02,  1.2189e+00, -1.5235e-01, -1.8289e+00],</span>
+<span class="go">        [ 1.0009e-01,  1.0257e+00, -1.8893e-01, -1.5872e+00],</span>
+<span class="go">        [        nan,         nan,         nan,         nan],</span>
+<span class="go">        [-3.9405e-02, -1.7766e-01, -1.0403e-02,  3.0626e-01],</span>
+<span class="go">        [-4.2959e-02, -3.7263e-01, -4.2775e-03,  5.9564e-01],</span>
+<span class="go">        [-5.0411e-02, -5.6769e-01,  7.6354e-03,  8.8698e-01],</span>
+<span class="go">        [-6.1765e-02, -7.6292e-01,  2.5375e-02,  1.1820e+00],</span>
+<span class="go">        [-7.7023e-02, -9.5836e-01,  4.9016e-02,  1.4826e+00],</span>
+<span class="go">        [-9.6191e-02, -7.6387e-01,  7.8667e-02,  1.2056e+00],</span>
+<span class="go">        [-1.1147e-01, -9.5991e-01,  1.0278e-01,  1.5219e+00],</span>
+<span class="go">        [-1.3067e-01, -7.6617e-01,  1.3322e-01,  1.2629e+00],</span>
+<span class="go">        [-1.4599e-01, -5.7298e-01,  1.5848e-01,  1.0148e+00],</span>
+<span class="go">        [-1.5745e-01, -7.6982e-01,  1.7877e-01,  1.3527e+00],</span>
+<span class="go">        [-1.7285e-01, -9.6668e-01,  2.0583e-01,  1.6956e+00],</span>
+<span class="go">        [        nan,         nan,         nan,         nan],</span>
+<span class="go">        [-4.3962e-02,  1.9845e-01, -4.5015e-02, -2.5903e-01],</span>
+<span class="go">        [-3.9993e-02,  3.9418e-01, -5.0196e-02, -5.6557e-01],</span>
+<span class="go">        [-3.2109e-02,  5.8997e-01, -6.1507e-02, -8.7363e-01],</span>
+<span class="go">        [-2.0310e-02,  3.9574e-01, -7.8980e-02, -6.0090e-01]])</span>
+</pre></div>
+</div>
+</section>
 <section id="transforms">
 <h2>Transforms<a class="headerlink" href="#transforms" title="Permalink to this heading">¶</a></h2>
 <p id="id2">In most cases, the raw output of an environment must be treated before being passed to another object (such as a
@@ -948,6 +1023,12 @@ to be able to create this other composition:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.ActionMask.html#torchrl.envs.transforms.ActionMask" title="torchrl.envs.transforms.ActionMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ActionMask</span></code></a>([action_key, mask_key])</p></td>
 <td><p>An adaptive action masker.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.AutoResetEnv.html#torchrl.envs.transforms.AutoResetEnv" title="torchrl.envs.transforms.AutoResetEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AutoResetEnv</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A subclass for auto-resetting envs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.AutoResetTransform.html#torchrl.envs.transforms.AutoResetTransform" title="torchrl.envs.transforms.AutoResetTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AutoResetTransform</span></code></a>(*[, replace, fill_float, ...])</p></td>
+<td><p>A transform for auto-resetting environments.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.BatchSizeTransform.html#torchrl.envs.transforms.BatchSizeTransform" title="torchrl.envs.transforms.BatchSizeTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BatchSizeTransform</span></code></a>(*[, batch_size, ...])</p></td>
 <td><p>A transform to modify the batch-size of an environmt.</p></td>
 </tr>
@@ -1044,7 +1125,7 @@ to be able to create this other composition:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.RewardScaling.html#torchrl.envs.transforms.RewardScaling" title="torchrl.envs.transforms.RewardScaling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RewardScaling</span></code></a>(loc, scale[, in_keys, ...])</p></td>
 <td><p>Affine transform of the reward.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.RewardSum.html#torchrl.envs.transforms.RewardSum" title="torchrl.envs.transforms.RewardSum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RewardSum</span></code></a>([in_keys, out_keys, reset_keys])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.RewardSum.html#torchrl.envs.transforms.RewardSum" title="torchrl.envs.transforms.RewardSum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RewardSum</span></code></a>([in_keys, out_keys, reset_keys, ...])</p></td>
 <td><p>Tracks episode cumulative rewards.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/torchrl.envs.transforms.Reward2GoTransform.html#torchrl.envs.transforms.Reward2GoTransform" title="torchrl.envs.transforms.Reward2GoTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reward2GoTransform</span></code></a>([gamma, in_keys, ...])</p></td>
@@ -1405,6 +1486,7 @@ the following function will return <code class="docutils literal notranslate"><s
 <li><a class="reference internal" href="#">torchrl.envs package</a><ul>
 <li><a class="reference internal" href="#vectorized-envs">Vectorized envs</a></li>
 <li><a class="reference internal" href="#multi-agent-environments">Multi-agent environments</a></li>
+<li><a class="reference internal" href="#auto-resetting-envs">Auto-resetting Envs</a></li>
 <li><a class="reference internal" href="#transforms">Transforms</a><ul>
 <li><a class="reference internal" href="#cloning-transforms">Cloning transforms</a></li>
 </ul>

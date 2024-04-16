@@ -215,7 +215,7 @@ change the ``collate_fn`` since the default expects numerical data):
 
  .. code-block:: none
 
-    ['a', 'a', 'a']
+    [0, 'a', 0]
 
 
 
@@ -338,13 +338,13 @@ Let us sample from the buffer, and print the data:
 
  .. code-block:: none
 
-    samples tensor([[ 8,  9, 10, 11],
+    samples tensor([[ 4,  5,  6,  7],
+            [ 0,  1,  2,  3],
             [ 8,  9, 10, 11],
             [ 4,  5,  6,  7],
-            [ 4,  5,  6,  7],
-            [ 0,  1,  2,  3]]) tensor([[10, 11, 12, 13, 14],
+            [ 0,  1,  2,  3]]) tensor([[ 5,  6,  7,  8,  9],
+            [ 0,  1,  2,  3,  4],
             [10, 11, 12, 13, 14],
-            [ 5,  6,  7,  8,  9],
             [ 5,  6,  7,  8,  9],
             [ 0,  1,  2,  3,  4]])
 
@@ -376,16 +376,16 @@ A :class:`~torchrl.data.LazyMemmapStorage` is created in the same manner:
  .. code-block:: none
 
     The buffer has 3 elements
-    samples: a= tensor([[ 0,  1,  2,  3],
+    samples: a= tensor([[ 8,  9, 10, 11],
             [ 8,  9, 10, 11],
             [ 8,  9, 10, 11],
             [ 4,  5,  6,  7],
-            [ 4,  5,  6,  7]]) 
-    ('b', 'c'): tensor([[ 0,  1,  2,  3,  4],
+            [ 8,  9, 10, 11]]) 
+    ('b', 'c'): tensor([[10, 11, 12, 13, 14],
             [10, 11, 12, 13, 14],
             [10, 11, 12, 13, 14],
             [ 5,  6,  7,  8,  9],
-            [ 5,  6,  7,  8,  9]])
+            [10, 11, 12, 13, 14]])
 
 
 
@@ -419,8 +419,8 @@ We can also customize the storage location on disk:
  .. code-block:: none
 
     The buffer has 3 elements
-    the 'a' tensor is stored in <TemporaryDirectory '/tmp/tmp6dc9usab'>/a.memmap
-    the ('b', 'c') tensor is stored in <TemporaryDirectory '/tmp/tmp6dc9usab'>/b/c.memmap
+    the 'a' tensor is stored in <TemporaryDirectory '/tmp/tmp7h5399w7'>/a.memmap
+    the ('b', 'c') tensor is stored in <TemporaryDirectory '/tmp/tmp7h5399w7'>/b/c.memmap
 
 
 
@@ -511,7 +511,7 @@ Let us have a look at these indices:
 
  .. code-block:: none
 
-    tensor([0, 1, 0, 2, 2, 2, 0, 2, 2, 2, 0, 0])
+    tensor([0, 0, 1, 1, 2, 2, 1, 2, 1, 0, 0, 1])
 
 
 
@@ -1204,7 +1204,7 @@ higher indices should occur more frequently:
  .. code-block:: none
 
 
-    (array([ 22.,  26.,  93.,  48.,  69., 147.,  98., 181., 104., 236.]), array([ 1. ,  2.4,  3.8,  5.2,  6.6,  8. ,  9.4, 10.8, 12.2, 13.6, 15. ]), <BarContainer object of 10 artists>)
+    (array([ 38.,  33.,  99.,  42.,  55., 143.,  82., 200., 101., 231.]), array([ 1. ,  2.4,  3.8,  5.2,  6.6,  8. ,  9.4, 10.8, 12.2, 13.6, 15. ]), <BarContainer object of 10 artists>)
 
 
 
@@ -1260,7 +1260,7 @@ Now, higher indices should occur less frequently:
  .. code-block:: none
 
 
-    (array([234., 100., 173.,  90.,  93., 127.,  42.,  93.,  35.,  37.]), array([ 1. ,  2.4,  3.8,  5.2,  6.6,  8. ,  9.4, 10.8, 12.2, 13.6, 15. ]), <BarContainer object of 10 artists>)
+    (array([213., 105., 184.,  92.,  83., 129.,  55.,  93.,  34.,  36.]), array([ 1. ,  2.4,  3.8,  5.2,  6.6,  8. ,  9.4, 10.8, 12.2, 13.6, 15. ]), <BarContainer object of 10 artists>)
 
 
 
@@ -1710,17 +1710,17 @@ the end:
         return self._call_impl(*args, **kwargs)
       File "/pytorch/rl/env/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
         return forward_call(*args, **kwargs)
-      File "/pytorch/rl/torchrl/envs/transforms/transforms.py", line 1047, in forward
+      File "/pytorch/rl/torchrl/envs/transforms/transforms.py", line 1051, in forward
         tensordict = t(tensordict)
       File "/pytorch/rl/env/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
         return self._call_impl(*args, **kwargs)
       File "/pytorch/rl/env/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
         return forward_call(*args, **kwargs)
-      File "/pytorch/rl/torchrl/envs/transforms/transforms.py", line 2984, in forward
+      File "/pytorch/rl/torchrl/envs/transforms/transforms.py", line 2988, in forward
         return self.unfolding(tensordict)
       File "/pytorch/rl/env/lib/python3.8/site-packages/tensordict/_contextlib.py", line 126, in decorate_context
         return func(*args, **kwargs)
-      File "/pytorch/rl/torchrl/envs/transforms/transforms.py", line 3109, in unfolding
+      File "/pytorch/rl/torchrl/envs/transforms/transforms.py", line 3113, in unfolding
         reps = torch.stack(reps)
     RuntimeError: stack expects a non-empty TensorList
 
@@ -1825,9 +1825,9 @@ Next steps
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 49.290 seconds)
+   **Total running time of the script:** (2 minutes 38.370 seconds)
 
-**Estimated memory usage:**  4539 MB
+**Estimated memory usage:**  2759 MB
 
 
 .. _sphx_glr_download_tutorials_rb_tutorial.py:

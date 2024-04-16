@@ -488,13 +488,15 @@
         <span class="n">state_keys</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">full_state_spec</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">unravel_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">action_keys</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">done_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">unravel_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">done_keys</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">observation_keys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">state_keys</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reward_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">unravel_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">reward_keys</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">observation_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">unravel_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">observation_keys</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">unravel_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">state_keys</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_keys_filt</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_keys</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_keys</span><span class="p">))</span>
 
         <span class="n">excluded</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">exclude_reward</span><span class="p">:</span>
-            <span class="n">excluded</span> <span class="o">=</span> <span class="n">excluded</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_keys</span><span class="p">)</span>
+            <span class="c1"># If a reward is also a state, it must be in the input</span>
+            <span class="n">excluded</span> <span class="o">=</span> <span class="n">excluded</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_keys_filt</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">exclude_done</span><span class="p">:</span>
             <span class="n">excluded</span> <span class="o">=</span> <span class="n">excluded</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">done_keys</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">exclude_action</span><span class="p">:</span>
@@ -509,6 +511,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">keys_from_next</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">observation_keys</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">exclude_reward</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">keys_from_next</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_keys</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keys_from_next</span> <span class="o">+=</span> <span class="p">[</span>
+                <span class="n">reward_key</span>
+                <span class="k">for</span> <span class="n">reward_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_keys</span>
+                <span class="k">if</span> <span class="n">reward_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_keys</span>
+            <span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">exclude_done</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">keys_from_next</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_keys</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keys_from_root</span> <span class="o">=</span> <span class="p">[]</span>
@@ -523,7 +531,7 @@
 
         <span class="n">reset_keys</span> <span class="o">=</span> <span class="p">{</span><span class="n">_replace_last</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">&quot;_reset&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_keys</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exclude_from_root</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reset_keys</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_from_root</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_keys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_from_root</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_keys_filt</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">exclude_from_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repr_key_list_as_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exclude_from_root</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keys_from_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repr_key_list_as_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys_from_root</span><span class="p">)</span>
@@ -772,6 +780,12 @@
 <span class="sd">            batch_size=torch.Size([]),</span>
 <span class="sd">            device=None,</span>
 <span class="sd">            is_shared=False)</span>
+
+<span class="sd">    .. warning:: This function will not work properly if the reward key is also part of the input key when</span>
+<span class="sd">        the reward keys are excluded. This is why the :class:`~torchrl.envs.RewardSum` transform registers</span>
+<span class="sd">        the episode reward in the observation and not the reward spec by default.</span>
+<span class="sd">        When using the fast, cached version of this function (``_StepMDP``), this issue should not</span>
+<span class="sd">        be observed.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensordict</span><span class="p">,</span> <span class="n">LazyStackedTensorDict</span><span class="p">):</span>
