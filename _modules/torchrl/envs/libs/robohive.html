@@ -599,7 +599,7 @@
         <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_info</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">TensorDict</span><span class="p">({},</span> <span class="p">[]))</span>
         <span class="n">info</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="p">[</span><span class="s2">&quot;observation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_composite_from_td</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_composite_from_td</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="nd">@classmethod</span>
@@ -688,6 +688,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="nf">_reset_output_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">reset_data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">reset_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">reset_data</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">reset_data</span>
+
     <span class="k">def</span> <span class="nf">set_from_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_pixels</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the from_pixels attribute to an existing environment.</span>
 
@@ -732,7 +737,6 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read_obs</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">read_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">tensordict_out</span><span class="p">):</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">:</span>
             <span class="n">info_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">info_spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -743,6 +747,7 @@
             <span class="n">TensorDict</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="p">[])</span>
             <span class="o">.</span><span class="n">filter_non_tensor_data</span><span class="p">()</span>
             <span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="s2">&quot;obs_dict&quot;</span><span class="p">,</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span> <span class="s2">&quot;reward&quot;</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">obs_keys</span><span class="p">,</span> <span class="s2">&quot;act&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">filter_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="s2">&quot;info&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">info_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_spec</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span>
