@@ -10,7 +10,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>VmasWrapper &mdash; torchrl main documentation</title>
+  <title>MeltingpotWrapper &mdash; torchrl main documentation</title>
   
 
   
@@ -39,8 +39,8 @@
   <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="gym_backend" href="torchrl.envs.gym_backend.html" />
-    <link rel="prev" title="VmasEnv" href="torchrl.envs.VmasEnv.html" />
+    <link rel="next" title="MOGymEnv" href="torchrl.envs.MOGymEnv.html" />
+    <link rel="prev" title="MeltingpotEnv" href="torchrl.envs.MeltingpotEnv.html" />
   <!-- Google Analytics -->
   
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
@@ -332,13 +332,13 @@
         
           <li><a href="../envs.html">torchrl.envs package</a> &gt;</li>
         
-      <li>VmasWrapper</li>
+      <li>MeltingpotWrapper</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
         
             
-            <a href="../../_sources/reference/generated/torchrl.envs.VmasWrapper.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"></a>
+            <a href="../../_sources/reference/generated/torchrl.envs.MeltingpotWrapper.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"></a>
           
         
       </li>
@@ -359,7 +359,7 @@
 
         
           <div class="pytorch-call-to-action-links">
-            <div id="tutorial-type">reference/generated/torchrl.envs.VmasWrapper</div>
+            <div id="tutorial-type">reference/generated/torchrl.envs.MeltingpotWrapper</div>
 
             <div id="google-colab-link">
               <img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg"/>
@@ -385,29 +385,27 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <section id="vmaswrapper">
-<h1>VmasWrapper<a class="headerlink" href="#vmaswrapper" title="Permalink to this heading">¶</a></h1>
+  <section id="meltingpotwrapper">
+<h1>MeltingpotWrapper<a class="headerlink" href="#meltingpotwrapper" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="torchrl.envs.VmasWrapper">
-<span class="sig-prename descclassname"><span class="pre">torchrl.envs.</span></span><span class="sig-name descname"><span class="pre">VmasWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/torchrl/envs/libs/vmas.html#VmasWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torchrl.envs.VmasWrapper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Vmas environment wrapper.</p>
-<p>GitHub: <a class="reference external" href="https://github.com/proroklab/VectorizedMultiAgentSimulator">https://github.com/proroklab/VectorizedMultiAgentSimulator</a></p>
-<p>Paper: <a class="reference external" href="https://arxiv.org/abs/2207.03530">https://arxiv.org/abs/2207.03530</a></p>
+<dt class="sig sig-object py" id="torchrl.envs.MeltingpotWrapper">
+<span class="sig-prename descclassname"><span class="pre">torchrl.envs.</span></span><span class="sig-name descname"><span class="pre">MeltingpotWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/torchrl/envs/libs/meltingpot.html#MeltingpotWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torchrl.envs.MeltingpotWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Meltingpot environment wrapper.</p>
+<p>GitHub: <a class="reference external" href="https://github.com/google-deepmind/meltingpot">https://github.com/google-deepmind/meltingpot</a></p>
+<p>Paper: <a class="reference external" href="https://arxiv.org/abs/2211.13746">https://arxiv.org/abs/2211.13746</a></p>
+<p>Melting Pot assesses generalization to novel social situations involving both familiar and unfamiliar individuals,
+and has been designed to test a broad range of social interactions such as: cooperation, competition, deception,
+reciprocation, trust, stubbornness and so on. Melting Pot offers researchers a set of over 50 multi-agent
+reinforcement learning substrates (multi-agent games) on which to train agents, and over 256 unique test scenarios
+on which to evaluate these trained agents.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>env</strong> (<code class="docutils literal notranslate"><span class="pre">vmas.simulator.environment.environment.Environment</span></code>) – the vmas environment to wrap.</p>
+<dd class="field-odd"><p><strong>env</strong> (<code class="docutils literal notranslate"><span class="pre">meltingpot.utils.substrates.substrate.Substrate</span></code>) – the meltingpot substrate to wrap.</p>
 </dd>
 <dt class="field-even">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>num_envs</strong> (<em>int</em>) – Number of vectorized simulation environments. VMAS perfroms vectorized simulations using PyTorch.
-This argument indicates the number of vectorized environments that should be simulated in a batch. It will also
-determine the batch size of the environment.</p></li>
-<li><p><strong>device</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.device" title="(in PyTorch v2.2)"><em>torch.device</em></a><em>, </em><em>optional</em>) – Device for simulation. Defaults to the default device. All the tensors created by VMAS
-will be placed on this device.</p></li>
-<li><p><strong>continuous_actions</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use continuous actions. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, actions
-will be discrete. The number of actions and their size will depend on the chosen scenario.
-See the VMAS repository for more info.</p></li>
-<li><p><strong>max_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Horizon of the task. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> (infinite horizon). Each VMAS scenario can
+<li><p><strong>max_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Horizon of the task. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> (infinite horizon).
+Each Meltingpot substrate can
 be terminating or not. If <code class="docutils literal notranslate"><span class="pre">max_steps</span></code> is specified,
 the scenario is also terminated (and the <code class="docutils literal notranslate"><span class="pre">&quot;terminated&quot;</span></code> flag is set) whenever this horizon is reached.
 Unlike gym’s <code class="docutils literal notranslate"><span class="pre">TimeLimit</span></code> transform or torchrl’s <a class="reference internal" href="torchrl.envs.transforms.StepCounter.html#torchrl.envs.transforms.StepCounter" title="torchrl.envs.transforms.StepCounter"><code class="xref py py-class docutils literal notranslate"><span class="pre">StepCounter</span></code></a>,
@@ -415,8 +413,7 @@ this argument will not set the <code class="docutils literal notranslate"><span 
 <li><p><strong>categorical_actions</strong> (<em>bool</em><em>, </em><em>optional</em>) – if the environment actions are discrete, whether to transform
 them to categorical or one-hot. Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><strong>group_map</strong> (<a class="reference internal" href="torchrl.envs.MarlGroupMapType.html#torchrl.envs.MarlGroupMapType" title="torchrl.envs.MarlGroupMapType"><em>MarlGroupMapType</em></a><em> or </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – how to group agents in tensordicts for
-input/output. By default, if the agent names follow the <code class="docutils literal notranslate"><span class="pre">&quot;&lt;name&gt;_&lt;int&gt;&quot;</span></code>
-convention, they will be grouped by <code class="docutils literal notranslate"><span class="pre">&quot;&lt;name&gt;&quot;</span></code>. If they do not follow this convention, they will be all put
+input/output. By default, they will be all put
 in one group named <code class="docutils literal notranslate"><span class="pre">&quot;agents&quot;</span></code>.
 Otherwise, a group map can be specified or selected from some premade options.
 See <code class="xref py py-class docutils literal notranslate"><span class="pre">MarlGroupMapType</span></code> for more info.</p></li>
@@ -428,76 +425,68 @@ See <code class="xref py py-class docutils literal notranslate"><span class="pre
 input/output. See <code class="xref py py-class docutils literal notranslate"><span class="pre">MarlGroupMapType</span></code> for more info.</p></li>
 <li><p><strong>agent_names</strong> (<em>list of str</em>) – names of the agent in the environment</p></li>
 <li><p><strong>agent_names_to_indices_map</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em>) – dictionary mapping agent names to their index in the environment</p></li>
-<li><p><strong>unbatched_action_spec</strong> (<a class="reference internal" href="torchrl.data.TensorSpec.html#torchrl.data.TensorSpec" title="torchrl.data.TensorSpec"><em>TensorSpec</em></a>) – version of the spec without the vectorized dimension</p></li>
-<li><p><strong>unbatched_observation_spec</strong> (<a class="reference internal" href="torchrl.data.TensorSpec.html#torchrl.data.TensorSpec" title="torchrl.data.TensorSpec"><em>TensorSpec</em></a>) – version of the spec without the vectorized dimension</p></li>
-<li><p><strong>unbatched_reward_spec</strong> (<a class="reference internal" href="torchrl.data.TensorSpec.html#torchrl.data.TensorSpec" title="torchrl.data.TensorSpec"><em>TensorSpec</em></a>) – version of the spec without the vectorized dimension</p></li>
-<li><p><strong>het_specs</strong> (<em>bool</em>) – whether the enviornment has any lazy spec</p></li>
-<li><p><strong>het_specs_map</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>bool</em><em>]</em>) – dictionary mapping each group to a flag representing of the group has lazy specs</p></li>
 <li><p><strong>available_envs</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – the list of the scenarios available to build.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>VMAS returns a single <code class="docutils literal notranslate"><span class="pre">done</span></code> flag which does not distinguish between
+<p>Meltingpot returns a single <code class="docutils literal notranslate"><span class="pre">done</span></code> flag which does not distinguish between
 when the env reached <code class="docutils literal notranslate"><span class="pre">max_steps</span></code> and termination.
 If you deem the <code class="docutils literal notranslate"><span class="pre">truncation</span></code> signal necessary, set <code class="docutils literal notranslate"><span class="pre">max_steps</span></code> to
 <code class="docutils literal notranslate"><span class="pre">None</span></code> and use a <a class="reference internal" href="torchrl.envs.transforms.StepCounter.html#torchrl.envs.transforms.StepCounter" title="torchrl.envs.transforms.StepCounter"><code class="xref py py-class docutils literal notranslate"><span class="pre">StepCounter</span></code></a> transform.</p>
 </div>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">env</span> <span class="o">=</span> <span class="n">VmasWrapper</span><span class="p">(</span>
-<span class="gp">... </span>     <span class="n">vmas</span><span class="o">.</span><span class="n">make_env</span><span class="p">(</span>
-<span class="gp">... </span>         <span class="n">scenario</span><span class="o">=</span><span class="s2">&quot;flocking&quot;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="n">num_envs</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="n">continuous_actions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="n">max_steps</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="c1"># Scenario kwargs</span>
-<span class="gp">... </span>         <span class="n">n_agents</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<span class="gp">... </span>     <span class="p">)</span>
-<span class="gp">... </span> <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span> <span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">rollout</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">meltingpot</span> <span class="kn">import</span> <span class="n">substrate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">torchrl.envs.libs.meltingpot</span> <span class="kn">import</span> <span class="n">MeltingpotWrapper</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">substrate_config</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;commons_harvest__open&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mp_env</span> <span class="o">=</span> <span class="n">substrate</span><span class="o">.</span><span class="n">build_from_config</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">substrate_config</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="n">substrate_config</span><span class="o">.</span><span class="n">default_player_roles</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env_torchrl</span> <span class="o">=</span> <span class="n">MeltingpotWrapper</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">mp_env</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">env_torchrl</span><span class="o">.</span><span class="n">rollout</span><span class="p">(</span><span class="n">max_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
 <span class="go">TensorDict(</span>
 <span class="go">    fields={</span>
+<span class="go">        RGB: Tensor(shape=torch.Size([5, 144, 192, 3]), device=cpu, dtype=torch.uint8, is_shared=False),</span>
 <span class="go">        agents: TensorDict(</span>
 <span class="go">            fields={</span>
-<span class="go">                action: Tensor(shape=torch.Size([32, 10, 5, 2]), device=cpu, dtype=torch.float32, is_shared=False),</span>
-<span class="go">                info: TensorDict(</span>
+<span class="go">                action: Tensor(shape=torch.Size([5, 7]), device=cpu, dtype=torch.int64, is_shared=False),</span>
+<span class="go">                observation: TensorDict(</span>
 <span class="go">                    fields={</span>
-<span class="go">                        agent_collision_rew: Tensor(shape=torch.Size([32, 10, 5, 1]), device=cpu, dtype=torch.float32, is_shared=False),</span>
-<span class="go">                        agent_distance_rew: Tensor(shape=torch.Size([32, 10, 5, 1]), device=cpu, dtype=torch.float32, is_shared=False)},</span>
-<span class="go">                    batch_size=torch.Size([32, 10, 5]),</span>
+<span class="go">                        COLLECTIVE_REWARD: Tensor(shape=torch.Size([5, 7, 1]), device=cpu, dtype=torch.float64, is_shared=False),</span>
+<span class="go">                        READY_TO_SHOOT: Tensor(shape=torch.Size([5, 7, 1]), device=cpu, dtype=torch.float64, is_shared=False),</span>
+<span class="go">                        RGB: Tensor(shape=torch.Size([5, 7, 88, 88, 3]), device=cpu, dtype=torch.uint8, is_shared=False)},</span>
+<span class="go">                    batch_size=torch.Size([5, 7]),</span>
 <span class="go">                    device=cpu,</span>
-<span class="go">                    is_shared=False),</span>
-<span class="go">                observation: Tensor(shape=torch.Size([32, 10, 5, 18]), device=cpu, dtype=torch.float32, is_shared=False)},</span>
-<span class="go">            batch_size=torch.Size([32, 10, 5]),</span>
+<span class="go">                    is_shared=False)},</span>
+<span class="go">            batch_size=torch.Size([5, 7]),</span>
 <span class="go">            device=cpu,</span>
 <span class="go">            is_shared=False),</span>
-<span class="go">        done: Tensor(shape=torch.Size([32, 10, 1]), device=cpu, dtype=torch.bool, is_shared=False),</span>
+<span class="go">        done: Tensor(shape=torch.Size([5, 1]), device=cpu, dtype=torch.bool, is_shared=False),</span>
 <span class="go">        next: TensorDict(</span>
 <span class="go">            fields={</span>
+<span class="go">                RGB: Tensor(shape=torch.Size([5, 144, 192, 3]), device=cpu, dtype=torch.uint8, is_shared=False),</span>
 <span class="go">                agents: TensorDict(</span>
 <span class="go">                    fields={</span>
-<span class="go">                        info: TensorDict(</span>
+<span class="go">                        observation: TensorDict(</span>
 <span class="go">                            fields={</span>
-<span class="go">                                agent_collision_rew: Tensor(shape=torch.Size([32, 10, 5, 1]), device=cpu, dtype=torch.float32, is_shared=False),</span>
-<span class="go">                                agent_distance_rew: Tensor(shape=torch.Size([32, 10, 5, 1]), device=cpu, dtype=torch.float32, is_shared=False)},</span>
-<span class="go">                            batch_size=torch.Size([32, 10, 5]),</span>
+<span class="go">                                COLLECTIVE_REWARD: Tensor(shape=torch.Size([5, 7, 1]), device=cpu, dtype=torch.float64, is_shared=False),</span>
+<span class="go">                                READY_TO_SHOOT: Tensor(shape=torch.Size([5, 7, 1]), device=cpu, dtype=torch.float64, is_shared=False),</span>
+<span class="go">                                RGB: Tensor(shape=torch.Size([5, 7, 88, 88, 3]), device=cpu, dtype=torch.uint8, is_shared=False)},</span>
+<span class="go">                            batch_size=torch.Size([5, 7]),</span>
 <span class="go">                            device=cpu,</span>
 <span class="go">                            is_shared=False),</span>
-<span class="go">                        observation: Tensor(shape=torch.Size([32, 10, 5, 18]), device=cpu, dtype=torch.float32, is_shared=False),</span>
-<span class="go">                        reward: Tensor(shape=torch.Size([32, 10, 5, 1]), device=cpu, dtype=torch.float32, is_shared=False)},</span>
-<span class="go">                    batch_size=torch.Size([32, 10, 5]),</span>
+<span class="go">                        reward: Tensor(shape=torch.Size([5, 7, 1]), device=cpu, dtype=torch.float64, is_shared=False)},</span>
+<span class="go">                    batch_size=torch.Size([5, 7]),</span>
 <span class="go">                    device=cpu,</span>
 <span class="go">                    is_shared=False),</span>
-<span class="go">                done: Tensor(shape=torch.Size([32, 10, 1]), device=cpu, dtype=torch.bool, is_shared=False),</span>
-<span class="go">                terminated: Tensor(shape=torch.Size([32, 10, 1]), device=cpu, dtype=torch.bool, is_shared=False)},</span>
-<span class="go">            batch_size=torch.Size([32, 10]),</span>
+<span class="go">                done: Tensor(shape=torch.Size([5, 1]), device=cpu, dtype=torch.bool, is_shared=False),</span>
+<span class="go">                terminated: Tensor(shape=torch.Size([5, 1]), device=cpu, dtype=torch.bool, is_shared=False)},</span>
+<span class="go">            batch_size=torch.Size([5]),</span>
 <span class="go">            device=cpu,</span>
 <span class="go">            is_shared=False),</span>
-<span class="go">        terminated: Tensor(shape=torch.Size([32, 10, 1]), device=cpu, dtype=torch.bool, is_shared=False)},</span>
-<span class="go">    batch_size=torch.Size([32, 10]),</span>
+<span class="go">        terminated: Tensor(shape=torch.Size([5, 1]), device=cpu, dtype=torch.bool, is_shared=False)},</span>
+<span class="go">    batch_size=torch.Size([5]),</span>
 <span class="go">    device=cpu,</span>
 <span class="go">    is_shared=False)</span>
 </pre></div>
@@ -514,10 +503,10 @@ If you deem the <code class="docutils literal notranslate"><span class="pre">tru
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="torchrl.envs.gym_backend.html" class="btn btn-neutral float-right" title="gym_backend" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
+        <a href="torchrl.envs.MOGymEnv.html" class="btn btn-neutral float-right" title="MOGymEnv" accesskey="n" rel="next">Next <img src="../../_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
-        <a href="torchrl.envs.VmasEnv.html" class="btn btn-neutral" title="VmasEnv" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+        <a href="torchrl.envs.MeltingpotEnv.html" class="btn btn-neutral" title="MeltingpotEnv" accesskey="p" rel="prev"><img src="../../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
       
     </div>
   
@@ -549,7 +538,7 @@ If you deem the <code class="docutils literal notranslate"><span class="pre">tru
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">VmasWrapper</a></li>
+<li><a class="reference internal" href="#">MeltingpotWrapper</a></li>
 </ul>
 
             </div>
