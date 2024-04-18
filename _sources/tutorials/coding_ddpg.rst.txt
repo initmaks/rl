@@ -1646,7 +1646,7 @@ modules we need.
         out = func(_self, *args, **kwargs)
       File "/pytorch/rl/env/lib/python3.8/site-packages/tensordict/base.py", line 727, in to_module
         return self._to_module(
-      File "/pytorch/rl/env/lib/python3.8/site-packages/tensordict/_td.py", line 413, in _to_module
+      File "/pytorch/rl/env/lib/python3.8/site-packages/tensordict/_td.py", line 424, in _to_module
         child = __dict__["_modules"][key]
     KeyError: 'module'
 
@@ -1708,9 +1708,9 @@ To iterate further on this loss module we might consider:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 27.666 seconds)
+   **Total running time of the script:** (1 minutes 31.663 seconds)
 
-**Estimated memory usage:**  3165 MB
+**Estimated memory usage:**  4096 MB
 
 
 .. _sphx_glr_download_tutorials_coding_ddpg.py:

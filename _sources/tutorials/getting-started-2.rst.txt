@@ -108,6 +108,13 @@ we need to get a trainable loss module:
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /pytorch/rl/torchrl/envs/common.py:2989: DeprecationWarning: Your wrapper was not given a device. Currently, this value will default to 'cpu'. From v0.5 it will default to `None`. With a device of None, no device casting is performed and the resulting tensordicts are deviceless. Please set your device accordingly.
+      warnings.warn(
+
 
 
 
@@ -216,6 +223,13 @@ per module if that is your choice).
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /pytorch/rl/env/lib/python3.8/site-packages/torch/_custom_ops.py:253: DeprecationWarning: torch.library.impl_abstract was renamed to torch.library.register_fake. Please use that instead; we will remove torch.library.impl_abstract in a future version of PyTorch.
+      return torch.library.impl_abstract(qualname, func, _stacklevel=2)
+
 
 
 
@@ -308,7 +322,7 @@ To further explore the topic, have a look at:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 23.294 seconds)
+   **Total running time of the script:** (0 minutes 23.573 seconds)
 
 **Estimated memory usage:**  22 MB
 

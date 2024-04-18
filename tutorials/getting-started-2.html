@@ -458,6 +458,10 @@ we need to get a trainable loss module:</p>
 <span class="n">ddpg_loss</span> <span class="o">=</span> <a href="https://pytorch.org/tensordict/reference/generated/tensordict.nn.TensorDictModuleBase.html#tensordict.nn.TensorDictModuleBase" title="tensordict.nn.TensorDictModuleBase" class="sphx-glr-backref-module-tensordict-nn sphx-glr-backref-type-py-class"><span class="n">DDPGLoss</span></a><span class="p">(</span><span class="n">actor_network</span><span class="o">=</span><span class="n">actor</span><span class="p">,</span> <span class="n">value_network</span><span class="o">=</span><span class="n">value_net</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/pytorch/rl/torchrl/envs/common.py:2989: DeprecationWarning: Your wrapper was not given a device. Currently, this value will default to &#39;cpu&#39;. From v0.5 it will default to `None`. With a device of None, no device casting is performed and the resulting tensordicts are deviceless. Please set your device accordingly.
+  warnings.warn(
+</pre></div>
+</div>
 <p>And that is it! Our loss module can now be run with data coming from the
 environment (we omit exploration, storage and other features to focus on
 the loss functionality):</p>
@@ -515,6 +519,10 @@ per module if that is your choice).</p>
 <a href="https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html#torch.Tensor.backward" title="torch.Tensor.backward" class="sphx-glr-backref-module-torch sphx-glr-backref-type-py-method"><span class="n">total_loss</span><span class="o">.</span><span class="n">backward</span></a><span class="p">()</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/pytorch/rl/env/lib/python3.8/site-packages/torch/_custom_ops.py:253: DeprecationWarning: torch.library.impl_abstract was renamed to torch.library.register_fake. Please use that instead; we will remove torch.library.impl_abstract in a future version of PyTorch.
+  return torch.library.impl_abstract(qualname, func, _stacklevel=2)
+</pre></div>
+</div>
 <p>The following items will typically be
 found in your training loop:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam.step" title="torch.optim.Adam.step" class="sphx-glr-backref-module-torch-optim sphx-glr-backref-type-py-method"><span class="n">optim</span><span class="o">.</span><span class="n">step</span></a><span class="p">()</span>
@@ -555,7 +563,7 @@ optimization step or each collection step:</p>
 <li><p>The <a class="reference internal" href="coding_ddpg.html#coding-ddpg"><span class="std std-ref">Coding a DDPG loss tutorial</span></a>;</p></li>
 <li><p>Losses in action in <a class="reference internal" href="coding_ppo.html#coding-ppo"><span class="std std-ref">PPO</span></a> or <a class="reference internal" href="coding_dqn.html#coding-dqn"><span class="std std-ref">DQN</span></a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 23.294 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 23.573 seconds)</p>
 <p><strong>Estimated memory usage:</strong>  22 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-getting-started-2-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
