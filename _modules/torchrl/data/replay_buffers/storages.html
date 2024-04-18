@@ -1496,10 +1496,13 @@
                 <span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">include_nested</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">leaves_only</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="nb">str</span>
             <span class="p">):</span>
                 <span class="k">if</span> <span class="n">VERBOSE</span><span class="p">:</span>
-                    <span class="n">filesize</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span>
-                    <span class="n">torchrl_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">filesize</span><span class="si">}</span><span class="s2"> Mb of storage (size: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">).&quot;</span>
-                    <span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">filesize</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span>
+                        <span class="n">torchrl_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">filesize</span><span class="si">}</span><span class="s2"> Mb of storage (size: </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">).&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                        <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span> <span class="o">=</span> <span class="n">_init_pytree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scratch_dir</span><span class="p">,</span> <span class="n">max_size_along_dim0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">out</span>
@@ -1856,10 +1859,13 @@
         <span class="n">dtype</span><span class="o">=</span><span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">VERBOSE</span><span class="p">:</span>
-        <span class="n">filesize</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span>
-        <span class="n">torchrl_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;The storage was created in </span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> and occupies </span><span class="si">{</span><span class="n">filesize</span><span class="si">}</span><span class="s2"> Mb of storage.&quot;</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">filesize</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span>
+            <span class="n">torchrl_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The storage was created in </span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2"> and occupies </span><span class="si">{</span><span class="n">filesize</span><span class="si">}</span><span class="s2"> Mb of storage.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+            <span class="k">pass</span>
     <span class="k">return</span> <span class="n">out</span>
 
 
