@@ -1708,9 +1708,9 @@ To iterate further on this loss module we might consider:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 30.454 seconds)
+   **Total running time of the script:** (1 minutes 27.362 seconds)
 
-**Estimated memory usage:**  4002 MB
+**Estimated memory usage:**  2779 MB
 
 
 .. _sphx_glr_download_tutorials_coding_ddpg.py:

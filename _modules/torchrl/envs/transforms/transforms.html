@@ -4814,8 +4814,12 @@
 <span class="sd">        random (bool, optional): if ``True``, the values will be drawn randomly from</span>
 <span class="sd">            the TensorSpec domain (or a unit Gaussian if unbounded). Otherwise a fixed value will be assumed.</span>
 <span class="sd">            Defaults to `False`.</span>
-<span class="sd">        default_value (float, optional): if non-random filling is chosen, this</span>
-<span class="sd">            value will be used to populate the tensors. Defaults to `0.0`.</span>
+<span class="sd">        default_value (float, Callable, Dict[NestedKey, float], Dict[NestedKey, Callable], optional): If non-random</span>
+<span class="sd">            filling is chosen, `default_value` will be used to populate the tensors. If `default_value` is a float,</span>
+<span class="sd">            all elements of the tensors will be set to that value. If it is a callable, this callable is expected to</span>
+<span class="sd">            return a tensor fitting the specs, and it will be used to generate the tensors. Finally, if `default_value`</span>
+<span class="sd">            is a dictionary of tensors or a dictionary of callables with keys matching those of the specs, these will</span>
+<span class="sd">            be used to generate the corresponding tensors. Defaults to `0.0`.</span>
 <span class="sd">        reset_key (NestedKey, optional): the reset key to be used as partial</span>
 <span class="sd">            reset indicator. Must be unique. If not provided, defaults to the</span>
 <span class="sd">            only reset key of the parent environment (if it has only one)</span>
@@ -4872,8 +4876,11 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">primers</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="n">CompositeSpec</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">random</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">default_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">random</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="p">:</span> <span class="nb">float</span>
+        <span class="o">|</span> <span class="n">Callable</span>
+        <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="n">NestedKey</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+        <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="n">NestedKey</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">reset_key</span><span class="p">:</span> <span class="n">NestedKey</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
@@ -4888,8 +4895,31 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">CompositeSpec</span><span class="p">):</span>
             <span class="n">kwargs</span> <span class="o">=</span> <span class="n">CompositeSpec</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">primers</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="k">if</span> <span class="n">random</span> <span class="ow">and</span> <span class="n">default_value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Setting random to True and providing a default_value are incompatible.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">default_value</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">default_value</span> <span class="ow">or</span> <span class="mf">0.0</span>
+        <span class="p">)</span>  <span class="c1"># if not random and no default value, use 0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random</span> <span class="o">=</span> <span class="n">random</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">default_value</span> <span class="o">=</span> <span class="n">TensorDict</span><span class="p">(</span><span class="n">default_value</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">default_value_keys</span> <span class="o">=</span> <span class="n">default_value</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span>
+                <span class="kc">True</span><span class="p">,</span>
+                <span class="kc">True</span><span class="p">,</span>
+                <span class="n">is_leaf</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">NonTensorData</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)),</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">default_value_keys</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;If a default_value dictionary is provided, it must match the primers keys.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">default_value</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">default_value</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span> <span class="o">=</span> <span class="n">default_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_key</span> <span class="o">=</span> <span class="n">reset_key</span>
 
         <span class="c1"># sanity check</span>
@@ -4942,6 +4972,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">primers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
+    <span class="k">def</span> <span class="nf">_expand_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">spec</span><span class="o">.</span><span class="n">expand</span><span class="p">((</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">*</span><span class="n">spec</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
 <div class="viewcode-block" id="TensorDictPrimer.transform_observation_spec"><a class="viewcode-back" href="../../../../reference/generated/torchrl.envs.transforms.TensorDictPrimer.html#torchrl.envs.transforms.TensorDictPrimer.transform_observation_spec">[docs]</a>    <span class="k">def</span> <span class="nf">transform_observation_spec</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">observation_spec</span><span class="p">:</span> <span class="n">CompositeSpec</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CompositeSpec</span><span class="p">:</span>
@@ -4951,15 +4984,13 @@
             <span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">shape</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">observation_spec</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;The leading shape of the primer specs (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2">) should match the one of the parent env. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Got observation_spec.shape=</span><span class="si">{</span><span class="n">observation_spec</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> but the &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; entry&#39;s shape is </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
-                <span class="p">)</span>
+                <span class="n">expanded_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_shape</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">expanded_spec</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">device</span> <span class="o">=</span> <span class="n">observation_spec</span><span class="o">.</span><span class="n">device</span>
             <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
                 <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span>
-            <span class="n">observation_spec</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">observation_spec</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">observation_spec</span></div>
 
 <div class="viewcode-block" id="TensorDictPrimer.transform_input_spec"><a class="viewcode-back" href="../../../../reference/generated/torchrl.envs.transforms.TensorDictPrimer.html#torchrl.envs.transforms.TensorDictPrimer.transform_input_spec">[docs]</a>    <span class="k">def</span> <span class="nf">transform_input_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_spec</span><span class="p">:</span> <span class="n">TensorSpec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorSpec</span><span class="p">:</span>
@@ -4972,8 +5003,13 @@
     <span class="k">def</span> <span class="nf">_batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">batch_size</span>
 
+    <span class="k">def</span> <span class="nf">_validate_value_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spec</span><span class="o">.</span><span class="n">is_in</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Value (</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">) is not in the spec domain (</span><span class="si">{</span><span class="n">spec</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
 <div class="viewcode-block" id="TensorDictPrimer.forward"><a class="viewcode-back" href="../../../../reference/generated/torchrl.envs.transforms.TensorDictPrimer.html#torchrl.envs.transforms.TensorDictPrimer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDictBase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorDictBase</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tensordict</span><span class="o">.</span><span class="n">shape</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">tensordict</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="s2">&quot;The leading shape of the spec must match the tensordict&#39;s, &quot;</span>
@@ -4984,11 +5020,21 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span>
-                    <span class="n">spec</span><span class="o">.</span><span class="n">zero</span><span class="p">(),</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_value_tensor</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                        <span class="n">spec</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                        <span class="n">value</span><span class="p">,</span>
+                        <span class="n">device</span><span class="o">=</span><span class="n">spec</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                    <span class="p">)</span>
+
             <span class="n">tensordict</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">tensordict</span></div>
 
     <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span>
@@ -5017,22 +5063,36 @@
         <span class="p">)</span>
         <span class="n">_reset</span> <span class="o">=</span> <span class="n">_get_reset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_key</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_reset</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="p">:</span>
                     <span class="n">value</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span>
-                        <span class="n">spec</span><span class="o">.</span><span class="n">zero</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="n">prev_val</span> <span class="o">=</span> <span class="n">tensordict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">expand_as_right</span><span class="p">(</span><span class="n">_reset</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span> <span class="n">value</span><span class="p">,</span> <span class="n">prev_val</span><span class="p">)</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_validate_value_tensor</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                            <span class="n">spec</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                            <span class="n">value</span><span class="p">,</span>
+                            <span class="n">device</span><span class="o">=</span><span class="n">spec</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">prev_val</span> <span class="o">=</span> <span class="n">tensordict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="n">expand_as_right</span><span class="p">(</span><span class="n">_reset</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span> <span class="n">value</span><span class="p">,</span> <span class="n">prev_val</span>
+                        <span class="p">)</span>
                 <span class="n">tensordict_reset</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validated</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">tensordict_reset</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">class_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">(primers=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="si">}</span><span class="s2">, default_value=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="si">}</span><span class="s2">, random=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="n">default_value</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;Callable&quot;</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">(primers=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">primers</span><span class="si">}</span><span class="s2">, default_value=</span><span class="si">{</span><span class="n">default_value</span><span class="si">}</span><span class="s2">, random=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 
 <div class="viewcode-block" id="PinMemoryTransform"><a class="viewcode-back" href="../../../../reference/generated/torchrl.envs.transforms.PinMemoryTransform.html#torchrl.envs.transforms.PinMemoryTransform">[docs]</a><span class="k">class</span> <span class="nc">PinMemoryTransform</span><span class="p">(</span><span class="n">Transform</span><span class="p">):</span>
