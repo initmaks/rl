@@ -629,6 +629,31 @@ exactly that:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">env</span><span class="o">.</span><span class="n">append_transform</span><span class="p">(</span><span class="n">lstm</span><span class="o">.</span><span class="n">make_tensordict_primer</span><span class="p">())</span>
 </pre></div>
 </div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>TransformedEnv(
+    env=GymEnv(env=CartPole-v1, batch_size=torch.Size([]), device=cpu),
+    transform=Compose(
+            ToTensorImage(keys=[&#39;pixels&#39;]),
+            GrayScale(keys=[&#39;pixels&#39;]),
+            Resize(w=84, h=84, interpolation=InterpolationMode.BILINEAR, keys=[&#39;pixels&#39;]),
+            StepCounter(keys=[]),
+            InitTracker(keys=[]),
+            RewardScaling(loc=0.0000, scale=0.1000, keys=[&#39;reward&#39;]),
+            ObservationNorm(keys=[&#39;pixels&#39;]),
+            TensorDictPrimer(primers=CompositeSpec(
+                recurrent_state_h: UnboundedContinuousTensorSpec(
+                    shape=torch.Size([1, 128]),
+                    space=None,
+                    device=cpu,
+                    dtype=torch.float32,
+                    domain=continuous),
+                recurrent_state_c: UnboundedContinuousTensorSpec(
+                    shape=torch.Size([1, 128]),
+                    space=None,
+                    device=cpu,
+                    dtype=torch.float32,
+                    domain=continuous), device=cpu, shape=torch.Size([])), default_value={&#39;recurrent_state_h&#39;: 0.0, &#39;recurrent_state_c&#39;: 0.0}, random=None)))
+</pre></div>
+</div>
 <p>and that’s it! We can print the environment to check that everything looks good now
 that we have added the primer:</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
@@ -888,15 +913,15 @@ Pay attention to the key names which will reflect what can be found in this data
     device=None,
     is_shared=False)
 
-  0%|          | 50/1000000 [00:00&lt;2:01:38, 137.00it/s]
-  0%|          | 50/1000000 [00:19&lt;2:01:38, 137.00it/s]
-steps: 12, loss_val:  0.0004, action_spread: tensor([ 5, 45]):   0%|          | 50/1000000 [00:19&lt;2:01:38, 137.00it/s]
-steps: 12, loss_val:  0.0004, action_spread: tensor([ 5, 45]):   0%|          | 100/1000000 [00:20&lt;65:33:56,  4.24it/s]
-steps: 13, loss_val:  0.0004, action_spread: tensor([ 7, 43]):   0%|          | 100/1000000 [00:39&lt;65:33:56,  4.24it/s]
-steps: 13, loss_val:  0.0004, action_spread: tensor([ 7, 43]):   0%|          | 150/1000000 [00:40&lt;85:57:16,  3.23it/s]
-steps: 16, loss_val:  0.0004, action_spread: tensor([37, 13]):   0%|          | 150/1000000 [00:59&lt;85:57:16,  3.23it/s]
-steps: 16, loss_val:  0.0004, action_spread: tensor([37, 13]):   0%|          | 200/1000000 [00:59&lt;95:41:36,  2.90it/s]
-steps: 17, loss_val:  0.0003, action_spread: tensor([25, 25]):   0%|          | 200/1000000 [01:19&lt;95:41:36,  2.90it/s]
+  0%|          | 50/1000000 [00:00&lt;2:10:45, 127.45it/s]
+  0%|          | 50/1000000 [00:14&lt;2:10:45, 127.45it/s]
+steps: 12, loss_val:  0.0005, action_spread: tensor([ 5, 45]):   0%|          | 50/1000000 [00:19&lt;2:10:45, 127.45it/s]
+steps: 12, loss_val:  0.0005, action_spread: tensor([ 5, 45]):   0%|          | 100/1000000 [00:20&lt;65:57:06,  4.21it/s]
+steps: 13, loss_val:  0.0006, action_spread: tensor([ 7, 43]):   0%|          | 100/1000000 [00:39&lt;65:57:06,  4.21it/s]
+steps: 13, loss_val:  0.0006, action_spread: tensor([ 7, 43]):   0%|          | 150/1000000 [00:40&lt;86:18:48,  3.22it/s]
+steps: 18, loss_val:  0.0004, action_spread: tensor([38, 12]):   0%|          | 150/1000000 [00:59&lt;86:18:48,  3.22it/s]
+steps: 18, loss_val:  0.0004, action_spread: tensor([38, 12]):   0%|          | 200/1000000 [01:00&lt;95:51:58,  2.90it/s]
+steps: 19, loss_val:  0.0006, action_spread: tensor([33, 17]):   0%|          | 200/1000000 [01:19&lt;95:51:58,  2.90it/s]
 </pre></div>
 </div>
 <p>Let’s plot our results:</p>
@@ -928,8 +953,8 @@ the data</p></li>
 <ul class="simple">
 <li><p>The TorchRL documentation can be found <a class="reference external" href="https://pytorch.org/rl/">here</a>.</p></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 17.405 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  1921 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 18.338 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  1930 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-dqn-with-rnn-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/28be785bad9a380ed2a853d865b074b9/dqn_with_rnn.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">dqn_with_rnn.ipynb</span></code></a></p>

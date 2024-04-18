@@ -811,6 +811,17 @@ Changing environments config
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    TransformedEnv(
+        env=GymEnv(env=Pendulum-v1, batch_size=torch.Size([]), device=cpu),
+        transform=Compose(
+                NoopResetEnv(noops=3, random=True),
+                ToTensorImage(keys=['pixels']),
+                ObservationNorm(loc=2.0000, scale=1.0000, keys=['pixels'])))
 
 
 
@@ -841,6 +852,17 @@ Transforms
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    TransformedEnv(
+        env=GymEnv(env=Pendulum-v1, batch_size=torch.Size([]), device=cpu),
+        transform=Compose(
+                NoopResetEnv(noops=3, random=True),
+                ToTensorImage(keys=['pixels']),
+                ObservationNorm(loc=2.0000, scale=1.0000, keys=['pixels'])))
 
 
 
@@ -2151,7 +2173,7 @@ The library is on PyPI: *pip install torchrl*
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 43.268 seconds)
+   **Total running time of the script:** (3 minutes 44.572 seconds)
 
 **Estimated memory usage:**  14 MB
 
